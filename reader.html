@@ -15,6 +15,7 @@
         <video id="video" width="100%" autoplay></video>
         <canvas id="canvas" style="display: none;"></canvas>
         <div id="result"></div>
+        <button id="scanButton">Start Scanning</button>
         <div class="navigation">
             <a href="index.html">Go to QR Code Generator</a>
         </div>
@@ -26,6 +27,7 @@
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
             const result = $('#result');
+            let scanning = false;
 
             // Access the camera
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
@@ -33,15 +35,22 @@
                     video.srcObject = stream;
                     video.setAttribute("playsinline", true); // Required to tell iOS Safari we don't want fullscreen
                     video.play();
-                    requestAnimationFrame(scanQRCode);
                 })
                 .catch(function(err) {
                     console.error('Error accessing camera: ' + err);
                     result.text('Error accessing camera. Please check permissions.');
                 });
 
+            $('#scanButton').click(function() {
+                scanning = !scanning; // Toggle scanning state
+                $(this).text(scanning ? 'Stop Scanning' : 'Start Scanning');
+                if (scanning) {
+                    requestAnimationFrame(scanQRCode);
+                }
+            });
+
             function scanQRCode() {
-                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                if (scanning && video.readyState === video.HAVE_ENOUGH_DATA) {
                     canvas.height = video.videoHeight;
                     canvas.width = video.videoWidth;
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -54,9 +63,20 @@
                         result.text('Scanning...');
                     }
                 }
-                requestAnimationFrame(scanQRCode);
+                if (scanning) {
+                    requestAnimationFrame(scanQRCode);
+                }
             }
         });
+
+        // Custom encoding/decoding functions
+        function customEncode(data) {
+            return btoa(data); // Simple Base64 encoding
+        }
+
+        function customDecode(encodedData) {
+            return atob(encodedData); // Simple Base64 decoding
+        }
     </script>
 </body>
 </html>
