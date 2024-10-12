@@ -3,22 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Generator</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
-    <script src="script.js" defer></script>
+    <title>Event Pass Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>QR Code Generator</h1>
-        <input type="text" id="urlInput" placeholder="Enter URL or Text" />
-        <button id="generateButton">Generate QR Code</button>
-        <div id="qrCode"></div>
-        <button id="downloadButton">Download QR Code</button>
-        <div class="navigation">
-            <a href="reader.html">Go to QR Code Reader</a>
+        <h1>Freshers Party Event Pass Generator</h1>
+        <form id="eventPassForm">
+            <input type="text" id="name" placeholder="Enter Name" required>
+            <input type="text" id="classYear" placeholder="Enter Class/Year" required>
+            <button type="submit">Generate Event Pass</button>
+            <button type="button" id="goToScannerBtn">Go to Scanner</button>
+        </form>
+        <div id="passPreview" class="pass-preview">
+            <h2>Event Pass Preview</h2>
+            <div id="passContent"></div>
+            <button id="downloadBtn" style="display:none;">Download Pass as PDF</button>
+            <button id="scanQrBtn" style="display:none;"><a href="scan.html">Scan QR Code</a></button>
         </div>
     </div>
+    <script src="script.js"></script>
 </body>
 </html>
