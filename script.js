@@ -1,63 +1,67 @@
-// Custom encoding function
-function customEncode(data) {
-    return btoa(data); // Simple Base64 encoding
-}
+const { jsPDF } = window.jspdf;
 
-function customDecode(encodedData) {
-    return atob(encodedData); // Simple Base64 decoding
-}
+document.getElementById('eventPassForm').addEventListener('submit', function(e) {
+    e.preventDefault();
 
-// QR Code Generation (index.html)
-$(document).ready(function() {
-    $('#generateButton').click(function() {
-        const dataToEncode = $('#urlInput').val();
-        const encodedData = customEncode(dataToEncode);
+    // Get input values
+    const name = document.getElementById('name').value;
+    const classYear = document.getElementById('classYear').value;
+
+    // Create a unique ID
+    const uniqueID = Date.now().toString();
+
+    // Function to encode data in Base64
+    function encodeData(data) {
+        return btoa(data);
+    }
+
+    // Create QR code data
+    const qrData = `Name: ${name}\nClass: ${classYear}\nEvent: Freshers Party\nDate: 19/10/2025\nVenue: Baramati Club\nID: ${uniqueID}`;
+    const encodedQrData = encodeData(qrData);
+
+    // Generate QR Code using an API
+    const qrCodeURL = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(encodedQrData)}&size=150x150`;
+
+    // Create pass content
+    const passContent = `
+        <h3>Freshers Party</h3>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Class:</strong> ${classYear}</p>
+        <p><strong>Date:</strong> 19/10/2025</p>
+        <p><strong>Venue:</strong> Baramati Club</p>
+        <img src="${qrCodeURL}" alt="QR Code" id="qrImage">
+    `;
+
+    // Display the pass preview
+    document.getElementById('passContent').innerHTML = passContent;
+    document.getElementById('passPreview').style.display = 'block';
+    document.getElementById('downloadBtn').style.display = 'inline-block';
+    document.getElementById('scanQrBtn').style.display = 'inline-block';
+
+    // Add download functionality for PDF
+    document.getElementById('downloadBtn').onclick = function() {
+        const doc = new jsPDF();
+        const imgElement = document.getElementById('qrImage');
+
+        // Convert the QR code image to base64 and add it to the PDF
+        const imgData = imgElement.src;
+
+        // Add text to PDF
+        doc.text("Freshers Party", 20, 20);
+        doc.text(`Name: ${name}`, 20, 30);
+        doc.text(`Class: ${classYear}`, 20, 40);
+        doc.text("Date: 19/10/2025", 20, 50);
+        doc.text("Venue: Baramati Club", 20, 60);
         
-        $('#qrCode').empty().qrcode(encodedData);
-    });
+        // Add QR code image to PDF
+        doc.addImage(imgData, 'PNG', 20, 70, 40, 40); // Adjust dimensions as needed
 
-    $('#downloadButton').click(function() {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        const qrCodeElement = $('#qrCode img')[0];
-
-        canvas.width = qrCodeElement.width;
-        canvas.height = qrCodeElement.height;
-        context.drawImage(qrCodeElement, 0, 0);
-
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = 'qrcode.png';
-        link.click();
-    });
+        // Save the PDF
+        doc.save('event_pass.pdf');
+    };
 });
 
-// QR Code Reading (reader.html)
-$(document).ready(function() {
-    $('#fileInput').change(function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = function() {
-                    const canvas = document.getElementById('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const decodedData = jsQR(imageData.data, canvas.width, canvas.height);
-                    if (decodedData) {
-                        $('#result').text('Decoded Data: ' + customDecode(decodedData.data));
-                    } else {
-                        $('#result').text('No QR code found.');
-                    }
-                };
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-});
+// Redirect to scanner page
+document.getElementById('goToScannerBtn').onclick = function() {
+    window.location.href = 'scan.html';
+};
